@@ -1,7 +1,7 @@
 # mcp-transport-prototype
 A prototype implementation to understand building custom MCP server that is accessible over stdio and SSE transport. The goal here is to understand SSE and stdio transports.
 
-### SSE Transport?
+### SSE Transport
 
 **Server-Sent Events (SSE)** is a simple, efficient way to push real-time updates from the server to the client over HTTP. 
 - Unlike WebSockets, SSE is one-way: the server can stream data to the client, but not vice versa. 
@@ -21,7 +21,7 @@ It sets up an MCP server over HTTP using Server-Sent Events (SSE).
 #### See in action
 ```bash
 # Run FastAPI server in terminal 1
-python main.py --transport sse
+uv run main.py --transport sse
 
 # Open an SSE connection in terminal 2
 curl http://localhost:8000/stream/test
@@ -43,7 +43,7 @@ event: mcp_response
 data: {"jsonrpc": "2.0", "id": 1, "result": {"echo": {"name": "Amish"}}}
 ```
 
-### What is stdio?
+### Stdio Transport
 
 **Stdio** (short for standard input/output) is a traditional way for programs to communicate by reading from and writing to the terminal or connected processes.
 - `stdin` (standard input): receives input data — usually from the keyboard, a file, or another program.
