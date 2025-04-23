@@ -1,55 +1,28 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import StreamingResponse
-from sse_starlette.sse import EventSourceResponse
-import asyncio
-import json
-from mcp_server import MCPServer
+from mcp.server.fastmcp import FastMCP
+from mcp.server.sse import SseServerTransport
+from starlette.applications import Starlette
+from starlette.routing import Mount, Route
 
-app = FastAPI()
-clients = {}
-server = MCPServer()
-
-@app.post("/send/{client_id}")
-async def send(client_id: str, request: Request):
+def create_sse_server(mcp: FastMCP):
     """
-    - Clients will POST a JSON RPC message to /send/{client_id}
-    - This server will process the message 
-    - The response is put into client's queue (if exists)
+    Create a Starlette app that handles SSE connections and message handling
     """
-    msg = await request.json()
-    response = await server.handle_message(msg)
-    queue = clients.get(client_id)
-    if queue:
-        await queue.put(response)
-    return {"status": "queued"}
+    transport = SseServerTransport("/messages/")
 
-@app.get("/stream/{client_id}")
-async def stream(client_id: str):
-    """
+    # Define handler functions
+    async def handle_sse(request):
+        async with transport.connect_sse(
+            request.scope, request.receive, request._send
+        ) as streams:
+            await mcp._mcp_server.run(
+                streams[0], streams[1], mcp._mcp_server.create_initialization_options()
+            )
 
-    - Clients will connect to this endpoint to open a live SSE stream
-    - A new queue is created for each client
-    - Stored in clients dict so it can later be accessed by the send() endpoint.
-    """
-    queue = asyncio.Queue()
-    clients[client_id] = queue
+    # Create Starlette routes for SSE and message handling
+    routes = [
+        Route("/sse/", endpoint=handle_sse),
+        Mount("/messages/", app=transport.handle_post_message)
+    ]
 
-    # event_generator coroutine yield events from the queue
-    async def event_generator():
-        try:
-            while True:
-                resp = await queue.get()
-                yield {"event": "mcp_response", "data": json.dumps(resp)}
-        except asyncio.CancelledError:
-            # on client disconnection, remove the queue
-            clients.pop(client_id, None)
-            raise
-
-    return EventSourceResponse(event_generator())
-
-def run_sse():
-    """
-    Runs the FastAPI server/app with SSE transport
-    """
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Return a Starlette app
+    return Starlette(routes=routes)
