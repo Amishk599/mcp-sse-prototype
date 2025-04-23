@@ -12,7 +12,7 @@ async def main():
         async with ClientSession(read_stream, write_stream) as session:
             # Perform the MCP handshake
             await session.initialize()
-            print("SSE connection initialized and session started.")
+            print("SSE connection initialized and session started")
 
             # List available tools on the server
             tools_response = await session.list_tools()
@@ -21,7 +21,7 @@ async def main():
 
             # Call the tool to be tested
             echo_response = await session.call_tool("echo", {"name": "Amish"})
-            print(f"🗣️ Echo tool response:\n{echo_response.content}")
+            print(f"Echo tool response:\n{echo_response.content}")
 
 if __name__ == "__main__":
     asyncio.run(main())

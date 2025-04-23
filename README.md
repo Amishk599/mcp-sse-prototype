@@ -19,7 +19,7 @@ A prototype implementation to understand building custom MCP server that is acce
 > Compared to SSE, stdio-based MCP servers feel more like in-process tools. They're ideal when you're launching the MCP server as a subprocess, such as from a command-line tool, an LLM agent, or a background script that needs to send and receive structured data efficiently without using a network.
 
 ### See in Action
-[mcp_client.py]() is a quick script to test MCP server in SSE mode. 
+[mcp_client.py](https://github.com/Amishk599/mcp-transport-prototype/blob/main/mcp_client.py) is a quick script to test MCP server in SSE mode. 
 ```
 # Run in Terminal 1
 uv run main.py
